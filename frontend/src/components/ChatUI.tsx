@@ -7,14 +7,14 @@ interface ChatUIProps {
 export function ChatUI({ messages }: ChatUIProps) {
   if (messages.length === 0) {
     return (
-      <div className="min-h-64 rounded-xl border border-blue-200/60 bg-blue-50/50 px-4 py-12 text-center text-sm text-slate-600">
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-center rounded-xl border border-blue-200/60 bg-blue-50/50 px-4 py-12 text-center text-sm text-slate-600 w-full">
         会話が始まるとここに表示されます
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-64 max-h-96 flex-col gap-3 overflow-y-auto rounded-xl border border-blue-200/60 bg-blue-50/50 p-3">
+    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto rounded-xl border border-blue-200/60 bg-blue-50/50 p-3">
       {messages.map((msg, i) => (
         <div
           key={i}

@@ -56,11 +56,11 @@ export function Header({
   const { bg, ring, animate } = LAMP_STYLES[connectionState];
 
   return (
-    <header className="relative flex items-center justify-center py-6">
+    <header className="fixed top-0 left-0 right-0 z-10 flex w-full items-center justify-start border-b border-slate-200/60 bg-slate-100/70 px-4 py-6 backdrop-blur-md">
       <h1 className="text-2xl font-semibold text-slate-800">
         AI Voice Chat
       </h1>
-      <div className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-1">
+      <div className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-3">
         <span
           className={`inline-block size-3 rounded-full ring-4 ${bg} ${ring} ${animate ?? ""}`}
           title={

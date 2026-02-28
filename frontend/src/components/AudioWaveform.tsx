@@ -47,7 +47,7 @@ export function AudioWaveform({
       <span className="text-sm font-medium text-slate-700">{label}</span>
       <div
         ref={containerRef}
-        className="h-18 w-full overflow-hidden rounded-xl border border-blue-200/60 bg-blue-50/50"
+        className="h-12 w-full overflow-hidden rounded-xl border border-blue-200/60 bg-blue-50/50"
       >
         <canvas
           ref={canvasRef}

@@ -53,13 +53,18 @@ function App() {
     }
   };
 
+  const showDisconnect =
+    connectionState === "connecting" || connectionState === "connected";
+
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col px-4 py-6">
+    <div className="flex min-h-screen w-full flex-col px-4 py-6 pt-24">
       <Header
         connectionState={connectionState}
         onSettingsClick={() => setSettingsOpen(true)}
       />
-      <main className="flex flex-1 flex-col gap-4">
+      <main
+        className={`flex min-h-0 flex-1 flex-col gap-4 ${showDisconnect ? "pb-20" : ""}`}
+      >
         <Modal
           isOpen={settingsOpen}
           onClose={() => setSettingsOpen(false)}
@@ -76,31 +81,34 @@ function App() {
           />
         </Modal>
 
+        {connectionState === "connected" && (
+          <div className="flex gap-4">
+            <div className="min-w-0 flex-1">
+              <AudioWaveform
+                stream={localStream}
+                label="マイク入力"
+                variant="input"
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <AudioWaveform
+                stream={remoteStream}
+                label="スピーカー出力"
+                variant="output"
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <ChatUI messages={messages} />
+        </div>
+
         {connectionState === "disconnected" && (
           <ConnectButton
             onClick={handleConnect}
             disabled={loading}
           />
-        )}
-
-        {connectionState === "connected" && (
-          <div className="flex flex-col gap-4">
-            <ChatUI messages={messages} />
-            <AudioWaveform
-              stream={localStream}
-              label="マイク入力"
-              variant="input"
-            />
-            <AudioWaveform
-              stream={remoteStream}
-              label="スピーカー出力"
-              variant="output"
-            />
-          </div>
-        )}
-
-        {(connectionState === "connecting" || connectionState === "connected") && (
-          <DisconnectButton onClick={handleDisconnect} />
         )}
 
         {error && (
@@ -111,6 +119,12 @@ function App() {
 
         <AudioOutput ref={audioRef} />
       </main>
+
+      {showDisconnect && (
+        <div className="fixed bottom-0 left-0 right-0 border-t border-slate-200/60 bg-slate-100/70 px-4 py-4 backdrop-blur-md">
+          <DisconnectButton onClick={handleDisconnect} />
+        </div>
+      )}
     </div>
   );
 }

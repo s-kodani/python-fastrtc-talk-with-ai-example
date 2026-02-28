@@ -20,10 +20,7 @@ export function useOutputStream(webrtcId: string | null) {
   }, []);
 
   useEffect(() => {
-    if (!webrtcId) {
-      setMessages([]);
-      return;
-    }
+    if (!webrtcId) return;
 
     const base = serverUrl("/api/updates");
     const url = base.startsWith("http")
@@ -56,8 +53,10 @@ export function useOutputStream(webrtcId: string | null) {
 
     return () => {
       eventSource.close();
+      setMessages([]);
     };
   }, [webrtcId]);
 
-  return { messages, clearMessages };
+  const displayedMessages = webrtcId ? messages : [];
+  return { messages: displayedMessages, clearMessages };
 }
