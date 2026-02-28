@@ -1,7 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 
 export type ConnectionState = "disconnected" | "connecting" | "connected";
-export type MicrophoneStatus = "idle" | "talking" | "listening";
 
 const WEBRTC_OFFER_URL = "/webrtc/offer";
 
@@ -29,8 +28,8 @@ function sendIceCandidate(webrtcId: string | null, candidate: RTCIceCandidate) {
 export function useWebRTC(options: UseWebRTCOptions = {}) {
   const [connectionState, setConnectionState] =
     useState<ConnectionState>("disconnected");
-  const [microphoneStatus, setMicrophoneStatus] =
-    useState<MicrophoneStatus>("idle");
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const webrtcIdRef = useRef<string | null>(null);
@@ -46,6 +45,7 @@ export function useWebRTC(options: UseWebRTCOptions = {}) {
             : true,
         });
         streamRef.current = stream;
+        setLocalStream(stream);
 
         const pc = new RTCPeerConnection(ICE_CONFIG);
         pcRef.current = pc;
@@ -60,6 +60,7 @@ export function useWebRTC(options: UseWebRTCOptions = {}) {
             const targetStream = streams[0];
             if (targetStream) {
               audio.srcObject = targetStream;
+              setRemoteStream(targetStream);
               if (speakerDeviceId && "setSinkId" in audio) {
                 (audio as HTMLAudioElement)
                   .setSinkId(speakerDeviceId)
@@ -76,14 +77,12 @@ export function useWebRTC(options: UseWebRTCOptions = {}) {
           const state = pc.connectionState;
           if (state === "connected") {
             setConnectionState("connected");
-            setMicrophoneStatus("idle");
           } else if (
             state === "failed" ||
             state === "disconnected" ||
             state === "closed"
           ) {
             setConnectionState("disconnected");
-            setMicrophoneStatus("idle");
           }
         };
 
@@ -139,6 +138,7 @@ export function useWebRTC(options: UseWebRTCOptions = {}) {
         await pc.setRemoteDescription(remoteDesc);
       } catch (err) {
         setConnectionState("disconnected");
+        setLocalStream(null);
         options.onError?.(err instanceof Error ? err : new Error(String(err)));
       }
     },
@@ -163,13 +163,20 @@ export function useWebRTC(options: UseWebRTCOptions = {}) {
     webrtcIdRef.current = null;
     makingOfferRef.current = false;
     setConnectionState("disconnected");
-    setMicrophoneStatus("idle");
+    setLocalStream(null);
+    setRemoteStream(null);
+
+    // 再接続時に ontrack の applyStream が正しく動作するよう srcObject をクリア
+    const audio = document.querySelector("audio");
+    if (audio) {
+      audio.srcObject = null;
+    }
   }, []);
 
   return {
     connectionState,
-    microphoneStatus,
-    setMicrophoneStatus,
+    localStream,
+    remoteStream,
     connect,
     disconnect,
   };
