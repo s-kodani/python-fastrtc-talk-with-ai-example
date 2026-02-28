@@ -8,8 +8,8 @@ interface AudioWaveformProps {
 }
 
 const BAR_COLORS = {
-  input: "rgb(59, 130, 246)",
-  output: "rgb(34, 197, 94)",
+  input: "rgb(56, 189, 248)",
+  output: "rgb(34, 58, 134)",
 } as const;
 
 export function AudioWaveform({
@@ -44,10 +44,10 @@ export function AudioWaveform({
 
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-sm font-medium text-gray-700">{label}</span>
+      <span className="text-sm font-medium text-slate-700">{label}</span>
       <div
         ref={containerRef}
-        className="h-18 w-full overflow-hidden rounded border border-gray-200 bg-slate-50"
+        className="h-18 w-full overflow-hidden rounded-xl border border-blue-200/60 bg-blue-50/50"
       >
         <canvas
           ref={canvasRef}

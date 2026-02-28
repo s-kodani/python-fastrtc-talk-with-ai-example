@@ -10,17 +10,17 @@ const LAMP_STYLES: Record<
   { bg: string; ring: string; animate?: string }
 > = {
   disconnected: {
-    bg: "bg-gray-300",
-    ring: "ring-gray-200",
+    bg: "bg-slate-400",
+    ring: "ring-slate-300/50",
   },
   connecting: {
-    bg: "bg-amber-400",
-    ring: "ring-amber-200",
+    bg: "bg-sky-400",
+    ring: "ring-sky-300/50",
     animate: "animate-pulse",
   },
   connected: {
-    bg: "bg-emerald-500",
-    ring: "ring-emerald-300",
+    bg: "bg-blue-500",
+    ring: "ring-blue-400/50",
   },
 };
 
@@ -57,7 +57,9 @@ export function Header({
 
   return (
     <header className="relative flex items-center justify-center py-6">
-      <h1 className="text-2xl font-semibold text-gray-800">AI Voice Chat</h1>
+      <h1 className="text-2xl font-semibold text-slate-800">
+        AI Voice Chat
+      </h1>
       <div className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-1">
         <span
           className={`inline-block size-3 rounded-full ring-4 ${bg} ${ring} ${animate ?? ""}`}
@@ -74,7 +76,7 @@ export function Header({
           <button
             type="button"
             onClick={onSettingsClick}
-            className="rounded p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-800"
+            className="rounded-lg p-2 text-slate-600 transition-colors hover:bg-slate-200/50 hover:text-slate-800"
             aria-label="設定"
           >
             <SettingsIcon />

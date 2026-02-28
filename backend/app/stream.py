@@ -3,7 +3,7 @@
 import logging
 
 import numpy as np
-from fastrtc import ReplyOnPause, Stream, AlgoOptions
+from fastrtc import AdditionalOutputs, ReplyOnPause, Stream, AlgoOptions
 
 from app.services.llm import chat_completion
 from app.services.stt import transcribe
@@ -52,6 +52,9 @@ def _response(audio: tuple[int, np.ndarray]):
         except Exception:
             logger.error("Pipeline: TTS fallback も失敗 → 終了")
             return
+
+    # Output Hooks: 文字起こしとAI応答をクライアントへ送信
+    yield AdditionalOutputs(text, response_text)
 
     for chunk in chunks:
         yield chunk

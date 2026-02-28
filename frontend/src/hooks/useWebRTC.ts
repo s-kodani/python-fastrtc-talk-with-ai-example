@@ -1,8 +1,8 @@
 import { useCallback, useRef, useState } from "react";
 
-export type ConnectionState = "disconnected" | "connecting" | "connected";
+import { serverUrl } from "../config";
 
-const WEBRTC_OFFER_URL = "/webrtc/offer";
+export type ConnectionState = "disconnected" | "connecting" | "connected";
 
 const ICE_CONFIG = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
@@ -14,7 +14,7 @@ interface UseWebRTCOptions {
 
 function sendIceCandidate(webrtcId: string | null, candidate: RTCIceCandidate) {
   if (!webrtcId) return;
-  fetch(WEBRTC_OFFER_URL, {
+  fetch(serverUrl("/webrtc/offer"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -28,6 +28,7 @@ function sendIceCandidate(webrtcId: string | null, candidate: RTCIceCandidate) {
 export function useWebRTC(options: UseWebRTCOptions = {}) {
   const [connectionState, setConnectionState] =
     useState<ConnectionState>("disconnected");
+  const [webrtcId, setWebrtcId] = useState<string | null>(null);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
@@ -93,8 +94,10 @@ export function useWebRTC(options: UseWebRTCOptions = {}) {
           }
         };
 
-        webrtcIdRef.current = Math.random().toString(36).slice(2);
-        const webrtcId = webrtcIdRef.current;
+        const id = Math.random().toString(36).slice(2);
+        webrtcIdRef.current = id;
+        setWebrtcId(id);
+        const webrtcId = id;
 
         pc.onicecandidate = (event) => {
           if (event.candidate) {
@@ -116,7 +119,7 @@ export function useWebRTC(options: UseWebRTCOptions = {}) {
         const localDesc = pc.localDescription;
         if (!localDesc) throw new Error("Failed to create offer");
 
-        const response = await fetch(WEBRTC_OFFER_URL, {
+        const response = await fetch(serverUrl("/webrtc/offer"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -138,6 +141,7 @@ export function useWebRTC(options: UseWebRTCOptions = {}) {
         await pc.setRemoteDescription(remoteDesc);
       } catch (err) {
         setConnectionState("disconnected");
+        setWebrtcId(null);
         setLocalStream(null);
         options.onError?.(err instanceof Error ? err : new Error(String(err)));
       }
@@ -161,6 +165,7 @@ export function useWebRTC(options: UseWebRTCOptions = {}) {
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
     webrtcIdRef.current = null;
+    setWebrtcId(null);
     makingOfferRef.current = false;
     setConnectionState("disconnected");
     setLocalStream(null);
@@ -175,6 +180,7 @@ export function useWebRTC(options: UseWebRTCOptions = {}) {
 
   return {
     connectionState,
+    webrtcId,
     localStream,
     remoteStream,
     connect,

@@ -1,12 +1,14 @@
 import { useRef, useState } from "react";
 import { AudioDeviceSelector } from "./components/AudioDeviceSelector";
-import { useAudioDevices } from "./hooks/useAudioDevices";
 import { AudioOutput } from "./components/AudioOutput";
 import { AudioWaveform } from "./components/AudioWaveform";
+import { ChatUI } from "./components/ChatUI";
 import { ConnectButton } from "./components/ConnectButton";
 import { DisconnectButton } from "./components/DisconnectButton";
 import { Header } from "./components/Header";
 import { Modal } from "./components/Modal";
+import { useAudioDevices } from "./hooks/useAudioDevices";
+import { useOutputStream } from "./hooks/useOutputStream";
 import { useWebRTC } from "./hooks/useWebRTC";
 
 function App() {
@@ -19,6 +21,7 @@ function App() {
   const { microphones, speakers, loading } = useAudioDevices();
   const {
     connectionState,
+    webrtcId,
     localStream,
     remoteStream,
     connect,
@@ -40,6 +43,8 @@ function App() {
     setError(null);
   };
 
+  const { messages } = useOutputStream(webrtcId);
+
   const handleSpeakerChange = (id: string) => {
     setSelectedSpeakerId(id);
     const audio = audioRef.current;
@@ -49,7 +54,7 @@ function App() {
   };
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col bg-white px-4 py-6">
+    <div className="mx-auto flex min-h-screen max-w-md flex-col px-4 py-6">
       <Header
         connectionState={connectionState}
         onSettingsClick={() => setSettingsOpen(true)}
@@ -80,16 +85,17 @@ function App() {
 
         {connectionState === "connected" && (
           <div className="flex flex-col gap-4">
-              <AudioWaveform
-                stream={localStream}
-                label="マイク入力"
-                variant="input"
-              />
-              <AudioWaveform
-                stream={remoteStream}
-                label="スピーカー出力"
-                variant="output"
-              />
+            <ChatUI messages={messages} />
+            <AudioWaveform
+              stream={localStream}
+              label="マイク入力"
+              variant="input"
+            />
+            <AudioWaveform
+              stream={remoteStream}
+              label="スピーカー出力"
+              variant="output"
+            />
           </div>
         )}
 
@@ -98,7 +104,7 @@ function App() {
         )}
 
         {error && (
-          <div className="rounded border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
+          <div className="rounded-lg border border-red-200 bg-red-50/90 px-4 py-3 text-sm text-red-800">
             {error}
           </div>
         )}
