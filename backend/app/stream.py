@@ -67,6 +67,13 @@ stream = Stream(
             speech_threshold=0.1
         ),
     ),
+    server_rtc_configuration={
+        "iceServers": [
+            {
+                "urls": ["stun:stun.l.google.com:19302"],
+            },
+        ],
+    },
     modality="audio",
     mode="send-receive",
 )

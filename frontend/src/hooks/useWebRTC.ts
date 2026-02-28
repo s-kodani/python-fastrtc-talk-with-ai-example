@@ -16,6 +16,7 @@ export function useWebRTC(options: UseWebRTCOptions = {}) {
     useState<MicrophoneStatus>("idle");
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const webrtcIdRef = useRef<string | null>(null);
 
   const connect = useCallback(
     async (micDeviceId: string, speakerDeviceId: string) => {
@@ -28,7 +29,15 @@ export function useWebRTC(options: UseWebRTCOptions = {}) {
         });
         streamRef.current = stream;
 
-        const pc = new RTCPeerConnection();
+        const pc = new RTCPeerConnection(
+          {
+            iceServers: [
+              {
+                urls: ["stun:stun.l.google.com:19302"],
+              },
+            ],
+          }
+        );
         pcRef.current = pc;
 
         pc.ontrack = (event) => {
@@ -59,6 +68,21 @@ export function useWebRTC(options: UseWebRTCOptions = {}) {
           }
         };
 
+        pc.onicecandidate = (event) => {
+          console.log("ICE candidate:", event.candidate);
+          if (event.candidate) {
+            fetch(WEBRTC_OFFER_URL, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                candidate: event.candidate.toJSON(),
+                webrtc_id: webrtcIdRef.current,
+                type: "ice-candidate",
+                    }),
+            });
+          }
+        };
+
         pc.createDataChannel("text");
 
         stream.getTracks().forEach((track) => pc.addTrack(track, stream));
@@ -66,13 +90,15 @@ export function useWebRTC(options: UseWebRTCOptions = {}) {
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
 
+        webrtcIdRef.current = Math.random().toString(36).slice(2);
+
         const response = await fetch(WEBRTC_OFFER_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             sdp: offer.sdp,
             type: offer.type,
-            webrtc_id: Math.random().toString(36).slice(2),
+            webrtc_id: webrtcIdRef.current,
           }),
         });
 
